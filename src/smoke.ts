@@ -1,12 +1,13 @@
 import { Command } from 'commander';
 import SwaggerParser from '@apidevtools/swagger-parser';
-import { exitCodeFromFindings, Finding, printFindings } from './output.js';
+import { exitCodeFromFindings, Finding, printFindings, printJson } from './output.js';
 
 interface SmokeOptions {
   spec: string;
   baseUrl: string;
   timeout: string;
   method?: string;
+  json: boolean;
 }
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options' | 'head';
@@ -80,13 +81,19 @@ export function openapiSmokeCommand(): Command {
     .requiredOption('-b, --base-url <url>', 'Target base URL')
     .option('-t, --timeout <ms>', 'Request timeout in milliseconds', '5000')
     .option('-m, --method <method>', 'HTTP method to test, or all', 'GET')
+    .option('--json', 'print machine-readable JSON output', false)
     .action(async (options: SmokeOptions) => {
       const findings = await runSmoke(options.spec, options.baseUrl, Number(options.timeout), options.method);
-      printFindings('API Smoke Test', findings);
       const passed = findings.filter((f) => f.level === 'ok').length;
       const failed = findings.filter((f) => f.level === 'error').length;
       const skipped = findings.filter((f) => f.level === 'info').length;
-      console.log(`\nSummary: ${passed} passed, ${failed} failed, ${skipped} skipped`);
+      const summary = { passed, failed, skipped };
+      if (options.json) {
+        printJson('API Smoke Test', findings, { summary, specPath: options.spec, baseUrl: options.baseUrl, method: options.method });
+      } else {
+        printFindings('API Smoke Test', findings);
+        console.log(`\nSummary: ${passed} passed, ${failed} failed, ${skipped} skipped`);
+      }
       process.exitCode = exitCodeFromFindings(findings);
     });
 }

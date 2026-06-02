@@ -14,6 +14,7 @@ OpenAPI specs already describe your API surface. `openapi-smoke` turns that cont
 ```bash
 npm install -g openapi-smoke
 openapi-smoke --spec ./openapi.yaml --base-url http://localhost:3000
+openapi-smoke --spec ./openapi.yaml --base-url http://localhost:3000 --json
 ```
 
 Local development:
@@ -43,6 +44,8 @@ Summary: 1 passed, 0 failed, 1 skipped
 - Supports `--method all` when you explicitly want broader coverage.
 - Per-request timeout.
 - Clear pass/fail/skipped summary.
+
+- Machine-readable `--json` output for CI and automation.
 
 ## Safety
 
